@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 dotenv.config();
 
 type URL = string | undefined;
-const url: URL = process.env.MONGO_URL
+const url: URL = process.env.MONGOD_URL
 
 // ! Define the connection method 
 const connectionDB = async () => {

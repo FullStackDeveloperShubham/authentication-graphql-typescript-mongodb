@@ -8,7 +8,12 @@ export const resolvers = {
 
     Mutation: {
         addUser: async (_: any, { input }) => {
-            console.log("User input", input)
+            const { email } = input
+
+            const existUser = await User.findOne({ email })
+            if (existUser) {
+                throw new Error("User already exist")
+            }
             try {
                 const newUser = await User.create({
                     ...input,

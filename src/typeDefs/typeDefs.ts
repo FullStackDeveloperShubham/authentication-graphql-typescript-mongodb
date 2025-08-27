@@ -5,7 +5,11 @@ export const typeDefs = gql`
      id:ID!
      UserName:String!
      email:String!
-     password:String!
+  }
+
+  type AuthPayload {
+    token:String!
+    user:User!
   }
 
    input UserInput {
@@ -20,6 +24,6 @@ export const typeDefs = gql`
 
   type Mutation {
     # Add User 
-    addUser(input:UserInput) : User!
+    addUser(input:UserInput) : AuthPayload!
   }
 `

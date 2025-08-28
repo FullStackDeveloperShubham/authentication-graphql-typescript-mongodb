@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import User from ".././models/user.model.js"
 export const resolvers = {
@@ -8,6 +9,7 @@ export const resolvers = {
     },
 
     Mutation: {
+        // ! Register the user 
         addUser: async (_: any, { input }) => {
             const { email } = input
 
@@ -30,7 +32,7 @@ export const resolvers = {
 
                 if (!JWT_SECRET) throw new Error("JWT_SECRET is not defined");
 
-                // Generate JWT
+                // !Generate JWT
                 const token = jwt.sign({ userId: newUser._id }, JWT_SECRET, {
                     expiresIn: JWT_EXPIRES as jwt.SignOptions['expiresIn'],
                 });
@@ -47,6 +49,59 @@ export const resolvers = {
                 return new Error("Error while creating the use")
             }
 
+        },
+
+        // ! LogIn the use 
+        logInUser: async (_: any, { email, password, token }) => {
+            const JWT_SECRET = process.env.JWT_SECRET;
+            const JWT_EXPIRES = process.env.JWT_EXPIRES || "1h";
+            if (!JWT_SECRET) throw new Error("JWT_SECRET is not defined");
+
+            if (token) {
+                try {
+                    const decoded = jwt.verify(token, JWT_SECRET);
+                    console.log("✅ Existing token verified:", decoded);
+
+                    const existUser = await User.findById((decoded as any).userId);
+                    if (!existUser) throw new Error("User not found for this token");
+
+                    return {
+                        message: "Token is already valid ✅",
+                        token,
+                        user: {
+                            id: existUser._id,
+                            email: existUser.email,
+                            UserName: existUser.UserName,
+                        },
+                    };
+                } catch (err) {
+                    console.error("❌ Invalid token:", err.message);
+                }
+            }
+
+            const existUser = await User.findOne({ email });
+            if (!existUser) {
+                throw new Error("Sorry user not found");
+            }
+
+            const isValidPassword = await bcrypt.compare(password, existUser.password);
+            if (!isValidPassword) {
+                throw new Error("Password validation failed");
+            }
+
+            const newToken = jwt.sign({ userId: existUser._id }, JWT_SECRET, {
+                expiresIn: JWT_EXPIRES as jwt.SignOptions["expiresIn"],
+            });
+
+            return {
+                message: "Login successful. New token generated ✅",
+                token: newToken,
+                user: {
+                    id: existUser._id,
+                    email: existUser.email,
+                    UserName: existUser.UserName,
+                },
+            };
         }
     }
 }

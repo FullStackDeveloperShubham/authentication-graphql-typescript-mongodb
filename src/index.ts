@@ -5,6 +5,7 @@ import { resolvers } from "./resolvers/resolvers.js"
 import { typeDefs } from "./typeDefs/typeDefs.js"
 
 import connectionDB from "./db/connectio.db.js"
+import { authMiddleware } from "./middleware/auth.middleware.js"
 const server = new ApolloServer({
     typeDefs,
     resolvers
@@ -12,7 +13,10 @@ const server = new ApolloServer({
 
 connectionDB().then(async () => {
     const { url } = await startStandaloneServer(server, {
-        listen: { port: 4000 }
+        listen: { port: 4000 },
+        context: async ({ req }) => {
+            return authMiddleware({ req })
+        }
     })
     console.log(`${url}`)
 }).catch((error) => {

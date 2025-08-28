@@ -25,5 +25,6 @@ export const typeDefs = gql`
   type Mutation {
     # Add User 
     addUser(input:UserInput) : AuthPayload!
+    logInUser(email:String! , password:String!):AuthPayload!
   }
 `
